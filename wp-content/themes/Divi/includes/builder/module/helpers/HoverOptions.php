@@ -61,14 +61,41 @@ class ET_Builder_Module_Hover_Options {
 	 * Check if the setting has enabled hover options
 	 *
 	 * @param string $setting
-	 * @param array $attrs
+	 * @param array  $attrs
 	 *
 	 * @return bool
 	 */
 	public function is_enabled( $setting, $attrs ) {
 		$name = $setting === 'background_color' ? 'background' : $setting;
 
-		return 'on' == $this->util_get( $this->get_hover_enabled_field( $name ), $attrs );
+		return strpos( $this->util_get( $this->get_hover_enabled_field( $name ), $attrs ), 'on' ) === 0;
+	}
+
+	/**
+	 * Check if hover settings are enabled on one of the options list.
+	 *
+	 * @since 4.5.1
+	 *
+	 * @param  array $attrs All module attributes.
+	 * @param  array $list  Options list.
+	 * @return boolean      Hover settings status.
+	 */
+	public function is_any_hover_enabled( $attrs, $list ) {
+		// Ensure list is not empty and valid array.
+		if ( empty( $list ) || ! is_array( $list ) ) {
+			return false;
+		}
+
+		// Check the hover status one by one.
+		$is_any_hover_enabled = false;
+		foreach ( $list as $name ) {
+			if ( $this->is_enabled( $name, $attrs ) ) {
+				$is_any_hover_enabled = true;
+				break;
+			}
+		}
+
+		return $is_any_hover_enabled;
 	}
 
 	/**
@@ -100,8 +127,8 @@ class ET_Builder_Module_Hover_Options {
 	 * If it does not exist, return $default specified value
 	 *
 	 * @param string $setting
-	 * @param array $attrs
-	 * @param mixed $default
+	 * @param array  $attrs
+	 * @param mixed  $default
 	 *
 	 * @return mixed
 	 */
@@ -117,8 +144,8 @@ class ET_Builder_Module_Hover_Options {
 	 *
 	 * @param string $setting
 	 * @param string $option
-	 * @param array $attrs
-	 * @param mixed $default
+	 * @param array  $attrs
+	 * @param mixed  $default
 	 *
 	 * @return mixed
 	 */
@@ -133,8 +160,8 @@ class ET_Builder_Module_Hover_Options {
 	 * If it does not exist, return $default specified value
 	 *
 	 * @param string $setting
-	 * @param array $attrs
-	 * @param mixed $default
+	 * @param array  $attrs
+	 * @param mixed  $default
 	 *
 	 * @return mixed
 	 */
@@ -179,6 +206,3 @@ class ET_Builder_Module_Hover_Options {
 	}
 }
 
-function et_pb_hover_options() {
-	return ET_Builder_Module_Hover_Options::get();
-}

@@ -105,7 +105,7 @@ class ET_Builder_Post_Type_Layout extends ET_Core_Post_Type {
 			'not_found_in_trash' => esc_html__( 'Nothing found in Trash', 'et_builder' ),
 			'parent_item_colon'  => '',
 			'search_items'       => esc_html__( 'Search Layouts', 'et_builder' ),
-			'singular_name'      => esc_html__( 'Layout', 'et_builder' ),
+			'singular_name'      => et_builder_i18n( 'Layout' ),
 			'view_item'          => esc_html__( 'View Layout', 'et_builder' ),
 		);
 	}
@@ -122,7 +122,7 @@ class ET_Builder_Post_Type_Layout extends ET_Core_Post_Type {
 	 */
 	public static function instance( $type = 'cpt', $name = 'et_pb_layout' ) {
 		if ( ! $instance = parent::instance( $type, $name ) ) {
-			$instance = new self;
+			$instance = new self();
 		}
 
 		return $instance;
@@ -157,8 +157,15 @@ class ET_Builder_Post_Type_Layout extends ET_Core_Post_Type {
 	 * @return bool
 	 */
 	public static function is_publicly_queryable() {
-		$get      = $_GET;
-		$is_VB    = '1' === self::$_->array_get( $get, 'et_fb' ) && et_pb_is_allowed( 'use_visual_builder' );
+		// phpcs:disable WordPress.Security.NonceVerification.NoNonceVerification
+		$get     = $_GET;
+		$actions = array(
+			'et_fb_update_builder_assets',
+			'et_fb_retrieve_builder_data',
+		);
+		$is_ajax = isset( $_REQUEST['action'] ) && in_array( $_REQUEST['action'], $actions );
+		$is_VB   = ( '1' === self::$_->array_get( $get, 'et_fb' ) || $is_ajax ) && et_pb_is_allowed( 'use_visual_builder' );
+		// phpcs:enable
 		$is_wpcli = defined( 'WP_CLI' ) && WP_CLI;
 
 		$has_preview = ! $is_VB && ! is_null( self::$_->array_get( $get, 'et_pb_preview', null ) );

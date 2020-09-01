@@ -1,7 +1,6 @@
 <?php
 
 require_once 'module/field/Factory.php';
-require_once 'module/helpers/Overflow.php';
 
 
 class ET_Builder_Settings {
@@ -27,9 +26,9 @@ class ET_Builder_Settings {
 	protected static $_PAGE_SETTINGS_FIELDS_META_KEY_MAP = array();
 
 	/**
-	 * @var array
+	 * @var array[]
 	 */
-	protected static $_PAGE_SETTINGS_IS_DEFAULT;
+	protected static $_PAGE_SETTINGS_IS_DEFAULT = array();
 
 	/**
 	 * @var array
@@ -150,8 +149,8 @@ class ET_Builder_Settings {
 
 	protected static function _get_builder_settings_fields() {
 		$builder_settings_fields = array(
-			'et_pb_static_css_file' => self::_get_static_css_generation_field( 'builder' ),
-			'et_pb_css_in_footer'   => array(
+			'et_pb_static_css_file'       => self::_get_static_css_generation_field( 'builder' ),
+			'et_pb_css_in_footer'         => array(
 				'type'            => 'yes_no_button',
 				'id'              => 'et_pb_css_in_footer',
 				'index'           => -1,
@@ -181,7 +180,7 @@ class ET_Builder_Settings {
 				'tab_slug'        => 'advanced',
 				'toggle_slug'     => 'product_tour',
 			),
-			'et_enable_bfb'   => array(
+			'et_enable_bfb'               => array(
 				'type'              => 'yes_no_button',
 				'id'                => 'et_enable_bfb',
 				'index'             => -1,
@@ -199,7 +198,7 @@ class ET_Builder_Settings {
 				'sub_setting_name'  => 'enable_bfb',
 				'is_global'         => true,
 			),
-			'et_enable_classic_editor'   => array(
+			'et_enable_classic_editor'    => array(
 				'type'            => 'yes_no_button',
 				'id'              => 'et_enable_classic_editor',
 				'index'           => -1,
@@ -244,7 +243,10 @@ class ET_Builder_Settings {
 		$fields = self::get_fields( 'builder' );
 		$result = array();
 
-		$result[]    = array( 'name' => 'wrap-builder', 'type' => 'contenttab-wrapstart' );
+		$result[]    = array(
+			'name' => 'wrap-builder',
+			'type' => 'contenttab-wrapstart',
+		);
 		$result[]    = array( 'type' => 'subnavtab-start' );
 		$tab_content = array();
 		$index       = 0;
@@ -259,8 +261,15 @@ class ET_Builder_Settings {
 				}
 
 				if ( ! $tab_content_started ) {
-					$result[]      = array( 'name' => "builder-{$index}", 'type' => 'subnav-tab', 'desc' => $tab_name );
-					$tab_content[] = array( 'name' => "builder-{$index}", 'type' => 'subcontent-start' );
+					$result[]      = array(
+						'name' => "builder-{$index}",
+						'type' => 'subnav-tab',
+						'desc' => $tab_name,
+					);
+					$tab_content[] = array(
+						'name' => "builder-{$index}",
+						'type' => 'subcontent-start',
+					);
 
 					$tab_content_started = true;
 				}
@@ -271,24 +280,33 @@ class ET_Builder_Settings {
 					$field_type = 'checkbox2';
 				}
 
-				$tab_content[] = array_merge( $field_info, array(
-					'name'             => $field_info['label'],
-					'id'               => $field_name,
-					'type'             => $field_type,
-					'std'              => $field_info['default'],
-					'desc'             => $field_info['description'],
-					'is_builder_field' => true,
-				) );
+				$tab_content[] = array_merge(
+					$field_info,
+					array(
+						'name'             => $field_info['label'],
+						'id'               => $field_name,
+						'type'             => $field_type,
+						'std'              => $field_info['default'],
+						'desc'             => $field_info['description'],
+						'is_builder_field' => true,
+					)
+				);
 			}
 
 			if ( $tab_content_started ) {
-				$tab_content[] = array( 'name' => "builder-{$index}", 'type' => 'subcontent-end' );
+				$tab_content[] = array(
+					'name' => "builder-{$index}",
+					'type' => 'subcontent-end',
+				);
 			}
 		}
 
 		$result[] = array( 'type' => 'subnavtab-end' );
 		$result   = array_merge( $result, $tab_content );
-		$result[] = array( 'name' => 'wrap-builder', 'type' => 'contenttab-wrapend' );
+		$result[] = array(
+			'name' => 'wrap-builder',
+			'type' => 'contenttab-wrapend',
+		);
 
 		return $result;
 	}
@@ -300,190 +318,213 @@ class ET_Builder_Settings {
 		);
 	}
 
-	protected static function _get_page_settings_fields() {
-		$fields = array();
+	protected static function _get_page_settings_fields( $post_type = 'post' ) {
+		$fields   = array();
 		$overflow = ET_Builder_Module_Fields_Factory::get( 'Overflow' );
 
 		if ( et_pb_is_allowed( 'ab_testing' ) ) {
 			$fields = self::_get_ab_testing_fields();
 		}
 
-		$overflow_fields = $overflow->get_fields( array(
-			'prefix'      => 'et_pb_',
-			'tab_slug'    => 'advanced',
-			'toggle_slug' => 'visibility',
-		) );
+		$overflow_fields = $overflow->get_fields(
+			array(
+				'prefix'      => 'et_pb_',
+				'tab_slug'    => 'advanced',
+				'toggle_slug' => 'visibility',
+			)
+		);
+
+		foreach ( $overflow_fields as $field => &$definition ) {
+			$definition['id'] = $field;
+		}
 
 		$fields = array_merge( $fields, $overflow_fields );
 
-		$fields = array_merge( $fields, array(
-			'et_pb_custom_css'                    => array(
-				'type'        => 'codemirror',
-				'id'          => 'et_pb_custom_css',
-				'mode'        => 'css',
-				'inline'      => false,
-				'label'       => esc_html__( 'Custom CSS', 'et_builder' ),
-				'tab_slug'    => 'advanced',
-				'toggle_slug' => 'custom_css',
-			),
-			'et_pb_color_palette'                 => array(
-				'type'        => 'colorpalette',
-				'id'          => 'et_pb_color_palette',
-				'label'       => esc_html__( 'Color Picker Color Pallete', 'et_builder' ),
-				'default'     => implode( '|', et_pb_get_default_color_palette() ),
-				'tab_slug'    => 'design',
-				'toggle_slug' => 'color_palette',
-			),
-			'et_pb_page_gutter_width'             => array(
-				'type'           => 'range',
-				'id'             => 'et_pb_page_gutter_width',
-				'meta_key'       => '_et_pb_gutter_width',
-				'label'          => esc_html__( 'Gutter Width', 'et_builder' ),
-				'range_settings' => array(
-					'step'      => 1,
-					'min'       => 1,
-					'max'       => 4,
-					'min_limit' => 1,
-					'max_limit' => 4,
+		$fields = array_merge(
+			$fields,
+			array(
+				'et_pb_custom_css'                       => array(
+					'type'        => 'codemirror',
+					'id'          => 'et_pb_custom_css',
+					'mode'        => 'css',
+					'inline'      => false,
+					'label'       => et_builder_i18n( 'Custom CSS' ),
+					'tab_slug'    => 'advanced',
+					'toggle_slug' => 'custom_css',
 				),
-				'default'        => et_get_option( 'gutter_width', 3 ),
-				'mobile_options' => false,
-				'validate_unit'  => false,
-				'tab_slug'       => 'design',
-				'toggle_slug'    => 'spacing',
-			),
-			'et_pb_light_text_color'              => array(
-				'type'        => 'color-alpha',
-				'id'          => 'et_pb_light_text_color',
-				'label'       => esc_html__( 'Light Text Color', 'et_builder' ),
-				'default'     => '#ffffff',
-				'tab_slug'    => 'design',
-				'toggle_slug' => 'text',
-			),
-			'et_pb_dark_text_color'               => array(
-				'type'        => 'color-alpha',
-				'id'          => 'et_pb_dark_text_color',
-				'label'       => esc_html__( 'Dark Text Color', 'et_builder' ),
-				'default'     => '#666666',
-				'tab_slug'    => 'design',
-				'toggle_slug' => 'text',
-			),
-			'et_pb_post_settings_title' => array(
-				'type'        => 'text',
-				'id'          => 'et_pb_post_settings_title',
-				'show_in_bb'  => false,
-				'post_field'  => 'post_title',
-				'label'       => esc_html__( 'Title', 'et_builder' ),
-				'default'     => '',
-				'tab_slug'    => 'content',
-				'toggle_slug' => 'main_content',
-			),
-			'et_pb_post_settings_excerpt' => array(
-				'type'        => 'textarea',
-				'id'          => 'et_pb_post_settings_excerpt',
-				'show_in_bb'  => false,
-				'post_field'  => 'post_excerpt',
-				'label'       => esc_html__( 'Excerpt', 'et_builder' ),
-				'default'     => '',
-				'tab_slug'    => 'content',
-				'toggle_slug' => 'main_content',
-			),
-			'et_pb_post_settings_image' => array(
-				'type'               => 'upload',
-				'id'                 => 'et_pb_post_settings_image',
-				'show_in_bb'         => false,
-				'meta_key'           => '_thumbnail_id',
-				// This meta must not be updated during save_post or it will overwrite
-				// the value set in the WP edit page....
-				'save_post'          => false,
-				'label'              => esc_html__( 'Featured Image', 'et_builder' ),
-				'embed'              => false,
-				'attachment_id'      => true,
-				'upload_button_text' => esc_attr__( 'Select', 'et_builder' ),
-				'choose_text'        => esc_attr__( 'Set featured image', 'et_builder' ),
-				'update_text'        => esc_attr__( 'Set As Image', 'et_builder' ),
-				'tab_slug'           => 'content',
-				'toggle_slug'        => 'main_content',
-			),
-			'et_pb_post_settings_categories' => array(
-				'id'                   => 'et_pb_post_settings_categories',
-				'show_in_bb'           => false,
-				'label'                => esc_html__( 'Categories', 'et_builder' ),
-				'type'                 => 'categories',
-				'option_category'      => 'basic_option',
-				'post_type'            => 'post',
-				'taxonomy_name'        => 'category',
-				'renderer_options'     => array(
-					'use_terms'        => false,
+				'et_pb_color_palette'                    => array(
+					'type'        => 'colorpalette',
+					'id'          => 'et_pb_color_palette',
+					'label'       => esc_html__( 'Color Picker Color Pallete', 'et_builder' ),
+					'default'     => implode( '|', et_pb_get_default_color_palette() ),
+					'tab_slug'    => 'design',
+					'toggle_slug' => 'color_palette',
 				),
-				'tab_slug'             => 'content',
-				'toggle_slug'          => 'main_content',
-				'depends_on_post_type' => array( 'post' ),
-			),
-			'et_pb_post_settings_tags' => array(
-				'id'                   => 'et_pb_post_settings_tags',
-				'show_in_bb'           => false,
-				'label'                => esc_html__( 'Tags', 'et_builder' ),
-				'type'                 => 'categories',
-				'option_category'      => 'basic_option',
-				'post_type'            => 'post',
-				'taxonomy_name'        => 'post_tag',
-				'renderer_options'     => array(
-					'use_terms'        => false,
+				'et_pb_page_gutter_width'                => array(
+					'type'           => 'range',
+					'id'             => 'et_pb_page_gutter_width',
+					'meta_key'       => '_et_pb_gutter_width',
+					'label'          => esc_html__( 'Gutter Width', 'et_builder' ),
+					'range_settings' => array(
+						'step'      => 1,
+						'min'       => 1,
+						'max'       => 4,
+						'min_limit' => 1,
+						'max_limit' => 4,
+					),
+					'default'        => (string) et_get_option( 'gutter_width', '3' ),
+					'mobile_options' => false,
+					'validate_unit'  => false,
+					'tab_slug'       => 'design',
+					'toggle_slug'    => 'spacing',
 				),
-				'tab_slug'             => 'content',
-				'toggle_slug'          => 'main_content',
-				'depends_on_post_type' => array( 'post' ),
-			),
-			'et_pb_post_settings_project_categories' => array(
-				'id'                   => 'et_pb_post_settings_project_categories',
-				'show_in_bb'           => false,
-				'label'                => esc_html__( 'Categories', 'et_builder' ),
-				'type'                 => 'categories',
-				'option_category'      => 'basic_option',
-				'post_type'            => 'project',
-				'taxonomy_name'        => 'project_category',
-				'renderer_options'     => array(
-					'use_terms'        => false,
+				'et_pb_light_text_color'                 => array(
+					'type'        => 'color-alpha',
+					'id'          => 'et_pb_light_text_color',
+					'label'       => esc_html__( 'Light Text Color', 'et_builder' ),
+					'default'     => '#ffffff',
+					'tab_slug'    => 'design',
+					'toggle_slug' => 'text',
 				),
-				'tab_slug'             => 'content',
-				'toggle_slug'          => 'main_content',
-				'depends_on_post_type' => array( 'project' ),
-			),
-			'et_pb_post_settings_project_tags' => array(
-				'id'                   => 'et_pb_post_settings_project_tags',
-				'show_in_bb'           => false,
-				'label'                => esc_html__( 'Tags', 'et_builder' ),
-				'type'                 => 'categories',
-				'option_category'      => 'basic_option',
-				'post_type'            => 'project',
-				'taxonomy_name'        => 'project_tag',
-				'renderer_options'     => array(
-					'use_terms'        => false,
+				'et_pb_dark_text_color'                  => array(
+					'type'        => 'color-alpha',
+					'id'          => 'et_pb_dark_text_color',
+					'label'       => esc_html__( 'Dark Text Color', 'et_builder' ),
+					'default'     => '#666666',
+					'tab_slug'    => 'design',
+					'toggle_slug' => 'text',
 				),
-				'tab_slug'             => 'content',
-				'toggle_slug'          => 'main_content',
-				'depends_on_post_type' => array( 'project' ),
-			),
-			'et_pb_content_area_background_color' => array(
-				'type'        => 'color-alpha',
-				'id'          => 'et_pb_content_area_background_color',
-				'label'       => esc_html__( 'Content Area Background Color', 'et_builder' ),
-				'default'     => 'rgba(255,255,255,0)',
-				'tab_slug'    => 'content',
-				'toggle_slug' => 'background',
-				'depends_on_post_type' => array( 'page' ),
-			),
-			'et_pb_section_background_color'      => array(
-				'type'        => 'color-alpha',
-				'id'          => 'et_pb_section_background_color',
-				'label'       => esc_html__( 'Section Background Color', 'et_builder' ),
-				'default'     => '#ffffff',
-				'tab_slug'    => 'content',
-				'toggle_slug' => 'background',
-			),
-			'et_pb_static_css_file'               => self::_get_static_css_generation_field( 'page' ),
-		) );
+				'et_pb_post_settings_title'              => array(
+					'type'        => 'text',
+					'id'          => 'et_pb_post_settings_title',
+					'show_in_bb'  => false,
+					'post_field'  => 'post_title',
+					'label'       => et_builder_i18n( 'Title' ),
+					'default'     => '',
+					'tab_slug'    => 'content',
+					'toggle_slug' => 'main_content',
+				),
+				'et_pb_post_settings_excerpt'            => array(
+					'type'        => 'textarea',
+					'id'          => 'et_pb_post_settings_excerpt',
+					'show_in_bb'  => false,
+					'post_field'  => 'post_excerpt',
+					'label'       => 'product' === $post_type ? esc_html__( 'Short Description', 'et_builder' ) : esc_html__( 'Excerpt', 'et_builder' ),
+					'default'     => '',
+					'tab_slug'    => 'content',
+					'toggle_slug' => 'main_content',
+				),
+				'et_pb_post_settings_image'              => array(
+					'type'               => 'upload',
+					'id'                 => 'et_pb_post_settings_image',
+					'show_in_bb'         => false,
+					'meta_key'           => '_thumbnail_id',
+					// This meta must not be updated during save_post or it will overwrite
+					// the value set in the WP edit page....
+					'save_post'          => false,
+					'label'              => 'product' === $post_type ? esc_html__( 'Product Image', 'et_builder' ) : esc_html__( 'Featured Image', 'et_builder' ),
+					'embed'              => false,
+					'attachment_id'      => true,
+					'upload_button_text' => esc_attr__( 'Select', 'et_builder' ),
+					'choose_text'        => esc_attr__( 'Set featured image', 'et_builder' ),
+					'update_text'        => esc_attr__( 'Set As Image', 'et_builder' ),
+					'tab_slug'           => 'content',
+					'toggle_slug'        => 'main_content',
+				),
+				'et_pb_post_settings_categories'         => array(
+					'id'                   => 'et_pb_post_settings_categories',
+					'show_in_bb'           => false,
+					'label'                => esc_html__( 'Categories', 'et_builder' ),
+					'type'                 => 'categories',
+					'option_category'      => 'basic_option',
+					'post_type'            => 'post',
+					'taxonomy_name'        => 'category',
+					'renderer_options'     => array(
+						'use_terms' => false,
+					),
+					'tab_slug'             => 'content',
+					'toggle_slug'          => 'main_content',
+					'depends_on_post_type' => array( 'post' ),
+				),
+				'et_pb_post_settings_tags'               => array(
+					'id'                   => 'et_pb_post_settings_tags',
+					'show_in_bb'           => false,
+					'label'                => esc_html__( 'Tags', 'et_builder' ),
+					'type'                 => 'categories',
+					'option_category'      => 'basic_option',
+					'post_type'            => 'post',
+					'taxonomy_name'        => 'post_tag',
+					'renderer_options'     => array(
+						'use_terms' => false,
+					),
+					'tab_slug'             => 'content',
+					'toggle_slug'          => 'main_content',
+					'depends_on_post_type' => array( 'post' ),
+				),
+				'et_pb_post_settings_project_categories' => array(
+					'id'                   => 'et_pb_post_settings_project_categories',
+					'show_in_bb'           => false,
+					'label'                => esc_html__( 'Categories', 'et_builder' ),
+					'type'                 => 'categories',
+					'option_category'      => 'basic_option',
+					'post_type'            => 'project',
+					'taxonomy_name'        => 'project_category',
+					'renderer_options'     => array(
+						'use_terms' => false,
+					),
+					'tab_slug'             => 'content',
+					'toggle_slug'          => 'main_content',
+					'depends_on_post_type' => array( 'project' ),
+				),
+				'et_pb_post_settings_project_tags'       => array(
+					'id'                   => 'et_pb_post_settings_project_tags',
+					'show_in_bb'           => false,
+					'label'                => esc_html__( 'Tags', 'et_builder' ),
+					'type'                 => 'categories',
+					'option_category'      => 'basic_option',
+					'post_type'            => 'project',
+					'taxonomy_name'        => 'project_tag',
+					'renderer_options'     => array(
+						'use_terms' => false,
+					),
+					'tab_slug'             => 'content',
+					'toggle_slug'          => 'main_content',
+					'depends_on_post_type' => array( 'project' ),
+				),
+				'et_pb_content_area_background_color'    => array(
+					'type'                 => 'color-alpha',
+					'id'                   => 'et_pb_content_area_background_color',
+					'label'                => esc_html__( 'Content Area Background Color', 'et_builder' ),
+					'default'              => 'rgba(255,255,255,0)',
+					'tab_slug'             => 'content',
+					'toggle_slug'          => 'background',
+					'depends_on_post_type' => array( 'page' ),
+				),
+				'et_pb_section_background_color'         => array(
+					'type'        => 'color-alpha',
+					'id'          => 'et_pb_section_background_color',
+					'label'       => esc_html__( 'Section Background Color', 'et_builder' ),
+					'default'     => '#ffffff',
+					'tab_slug'    => 'content',
+					'toggle_slug' => 'background',
+				),
+				'et_pb_page_z_index'                     => array(
+					'type'           => 'range',
+					'id'             => 'et_pb_page_z_index',
+					'range_settings' => array(
+						'min'  => -1000,
+						'max'  => 1000,
+						'step' => 1,
+					),
+					'unitless'       => true,
+					'label'          => esc_html__( 'Z Index', 'et_builder' ),
+					'default'        => '',
+					'tab_slug'       => 'advanced',
+					'toggle_slug'    => 'position',
+				),
+				'et_pb_static_css_file'                  => self::_get_static_css_generation_field( 'page' ),
+			)
+		);
 
 		return $fields;
 	}
@@ -525,9 +566,9 @@ class ET_Builder_Settings {
 			return self::$_PAGE_SETTINGS_VALUES[ $post_id ];
 		}
 
-		$overflow = et_pb_overflow();
+		$overflow         = et_pb_overflow();
 		$OVERFLOW_DEFAULT = ET_Builder_Module_Helper_Overflow::OVERFLOW_DEFAULT;
-		$is_default = array();
+		$is_default       = array();
 
 		// Page settings fields
 		$fields = self::$_PAGE_SETTINGS_FIELDS;
@@ -540,75 +581,76 @@ class ET_Builder_Settings {
 		$et_pb_ab_bounce_rate_limit = '' !== $ab_bounce_rate_limit ? $ab_bounce_rate_limit : $default_bounce_rate_limit;
 		$is_default[]               = $et_pb_ab_bounce_rate_limit === $default_bounce_rate_limit ? 'et_pb_ab_bounce_rate_limit' : '';
 
-		$color_palette              = get_post_meta( $post_id, '_et_pb_color_palette', true );
-		$default                    = $fields['et_pb_color_palette']['default'];
-		$et_pb_color_palette        = '' !== $color_palette ? $color_palette : $default;
-		$is_default[]               = $et_pb_color_palette === $default ? 'et_pb_color_palette' : '';
+		$color_palette       = get_post_meta( $post_id, '_et_pb_color_palette', true );
+		$default             = $fields['et_pb_color_palette']['default'];
+		$et_pb_color_palette = '' !== $color_palette ? $color_palette : $default;
+		$is_default[]        = $et_pb_color_palette === $default ? 'et_pb_color_palette' : '';
 
-		$gutter_width               = get_post_meta( $post_id, '_et_pb_gutter_width', true );
-		$default                    = $fields['et_pb_page_gutter_width']['default'];
-		$et_pb_page_gutter_width    = '' !== $gutter_width ? $gutter_width : $default;
-		$is_default[]               = $et_pb_page_gutter_width === $default ? 'et_pb_page_gutter_width' : '';
+		$gutter_width            = get_post_meta( $post_id, '_et_pb_gutter_width', true );
+		$default                 = $fields['et_pb_page_gutter_width']['default'];
+		$et_pb_page_gutter_width = '' !== $gutter_width ? $gutter_width : $default;
+		$is_default[]            = $et_pb_page_gutter_width === $default ? 'et_pb_page_gutter_width' : '';
 
-		$light_text_color           = get_post_meta( $post_id, '_et_pb_light_text_color', true );
-		$default                    = $fields['et_pb_light_text_color']['default'];
-		$et_pb_light_text_color     = '' !== $light_text_color ? $light_text_color : $default;
-		$is_default[]               = strtolower( $et_pb_light_text_color ) === $default ? 'et_pb_light_text_color' : '';
+		$light_text_color       = get_post_meta( $post_id, '_et_pb_light_text_color', true );
+		$default                = $fields['et_pb_light_text_color']['default'];
+		$et_pb_light_text_color = '' !== $light_text_color ? $light_text_color : $default;
+		$is_default[]           = strtolower( $et_pb_light_text_color ) === $default ? 'et_pb_light_text_color' : '';
 
-		$dark_text_color            = get_post_meta( $post_id, '_et_pb_dark_text_color', true );
-		$default                    = $fields['et_pb_dark_text_color']['default'];
-		$et_pb_dark_text_color      = '' !== $dark_text_color ? $dark_text_color : $default;
-		$is_default[]               = strtolower( $et_pb_dark_text_color ) === $default ? 'et_pb_dark_text_color' : '';
+		$dark_text_color       = get_post_meta( $post_id, '_et_pb_dark_text_color', true );
+		$default               = $fields['et_pb_dark_text_color']['default'];
+		$et_pb_dark_text_color = '' !== $dark_text_color ? $dark_text_color : $default;
+		$is_default[]          = strtolower( $et_pb_dark_text_color ) === $default ? 'et_pb_dark_text_color' : '';
 
 		$content_area_background_color       = get_post_meta( $post_id, '_et_pb_content_area_background_color', true );
 		$default                             = $fields['et_pb_content_area_background_color']['default'];
 		$et_pb_content_area_background_color = '' !== $content_area_background_color ? $content_area_background_color : $default;
 		$is_default[]                        = strtolower( $et_pb_content_area_background_color ) === $default ? 'et_pb_content_area_background_color' : '';
 
-		$section_background_color            = get_post_meta( $post_id, '_et_pb_section_background_color', true );
+		$section_background_color = get_post_meta( $post_id, '_et_pb_section_background_color', true );
 
-		$default                             = $fields['et_pb_section_background_color']['default'];
-		$et_pb_section_background_color      = '' !== $section_background_color ? $section_background_color : $default;
-		$is_default[]                        = strtolower( $et_pb_section_background_color ) === $default ? 'et_pb_section_background_color' : '';
+		$default                        = $fields['et_pb_section_background_color']['default'];
+		$et_pb_section_background_color = '' !== $section_background_color ? $section_background_color : $default;
+		$is_default[]                   = strtolower( $et_pb_section_background_color ) === $default ? 'et_pb_section_background_color' : '';
 
-		$overflow_x                          = (string) get_post_meta( $post_id, $overflow->get_field_x( '_et_pb_' ), true );
-		$is_default[]                        = empty( $overflow_x ) || $overflow_x == $OVERFLOW_DEFAULT ? $overflow->get_field_x( 'et_pb_' ) : '';
+		$overflow_x   = (string) get_post_meta( $post_id, $overflow->get_field_x( '_et_pb_' ), true );
+		$is_default[] = empty( $overflow_x ) || $overflow_x == $OVERFLOW_DEFAULT ? $overflow->get_field_x( 'et_pb_' ) : '';
 
-		$overflow_y                          = (string) get_post_meta( $post_id, $overflow->get_field_y( '_et_pb_' ), true );
-		$is_default[]                        = empty( $overflow_y ) || $overflow_y == $OVERFLOW_DEFAULT ? $overflow->get_field_y( 'et_pb_' ) : '';
+		$overflow_y   = (string) get_post_meta( $post_id, $overflow->get_field_y( '_et_pb_' ), true );
+		$is_default[] = empty( $overflow_y ) || $overflow_y == $OVERFLOW_DEFAULT ? $overflow->get_field_y( 'et_pb_' ) : '';
 
 		$static_css_file       = get_post_meta( $post_id, '_et_pb_static_css_file', true );
 		$default               = $fields['et_pb_static_css_file']['default'];
 		$et_pb_static_css_file = '' !== $static_css_file ? $static_css_file : $default;
 		$is_default[]          = $et_pb_static_css_file === $default ? 'et_pb_static_css_file' : '';
 
-		self::$_PAGE_SETTINGS_IS_DEFAULT = $is_default;
+		self::$_PAGE_SETTINGS_IS_DEFAULT[ $post_id ] = $is_default;
 
-		$post = get_post( $post_id );
+		$post   = get_post( $post_id );
 		$values = array(
-			'et_pb_enable_ab_testing'                => et_is_ab_testing_active() ? 'on' : 'off',
-			'et_pb_ab_bounce_rate_limit'             => $et_pb_ab_bounce_rate_limit,
-			'et_pb_ab_stats_refresh_interval'        => et_pb_ab_get_refresh_interval( $post_id ),
-			'et_pb_ab_subjects'                      => et_pb_ab_get_subjects( $post_id ),
-			'et_pb_enable_shortcode_tracking'        => get_post_meta( $post_id, '_et_pb_enable_shortcode_tracking', true ),
-			'et_pb_ab_current_shortcode'             => '[et_pb_split_track id="' . $post_id . '" /]',
-			'et_pb_custom_css'                       => get_post_meta( $post_id, '_et_pb_custom_css', true ),
-			'et_pb_color_palette'                    => $et_pb_color_palette,
-			'et_pb_page_gutter_width'                => $et_pb_page_gutter_width,
-			'et_pb_light_text_color'                 => strtolower( $et_pb_light_text_color ),
-			'et_pb_dark_text_color'                  => strtolower( $et_pb_dark_text_color ),
-			'et_pb_content_area_background_color'    => strtolower( $et_pb_content_area_background_color ),
-			'et_pb_section_background_color'         => strtolower( $et_pb_section_background_color ),
-			'et_pb_static_css_file'                  => $et_pb_static_css_file,
-			'et_pb_post_settings_title'              => $post ? $post->post_title : '',
-			'et_pb_post_settings_excerpt'            => $post ? $post->post_excerpt : '',
-			'et_pb_post_settings_image'              => get_post_thumbnail_id( $post_id ),
-			'et_pb_post_settings_categories'         => self::_get_object_terms( $post_id, 'category' ),
-			'et_pb_post_settings_tags'               => self::_get_object_terms( $post_id, 'post_tag' ),
-			'et_pb_post_settings_project_categories' => self::_get_object_terms( $post_id, 'project_category' ),
-			'et_pb_post_settings_project_tags'       => self::_get_object_terms( $post_id, 'project_tag' ),
+			'et_pb_enable_ab_testing'                 => et_is_ab_testing_active() ? 'on' : 'off',
+			'et_pb_ab_bounce_rate_limit'              => $et_pb_ab_bounce_rate_limit,
+			'et_pb_ab_stats_refresh_interval'         => et_pb_ab_get_refresh_interval( $post_id ),
+			'et_pb_ab_subjects'                       => et_pb_ab_get_subjects( $post_id ),
+			'et_pb_enable_shortcode_tracking'         => get_post_meta( $post_id, '_et_pb_enable_shortcode_tracking', true ),
+			'et_pb_ab_current_shortcode'              => '[et_pb_split_track id="' . $post_id . '" /]',
+			'et_pb_custom_css'                        => get_post_meta( $post_id, '_et_pb_custom_css', true ),
+			'et_pb_color_palette'                     => $et_pb_color_palette,
+			'et_pb_page_gutter_width'                 => $et_pb_page_gutter_width,
+			'et_pb_light_text_color'                  => strtolower( $et_pb_light_text_color ),
+			'et_pb_dark_text_color'                   => strtolower( $et_pb_dark_text_color ),
+			'et_pb_content_area_background_color'     => strtolower( $et_pb_content_area_background_color ),
+			'et_pb_section_background_color'          => strtolower( $et_pb_section_background_color ),
+			'et_pb_static_css_file'                   => $et_pb_static_css_file,
+			'et_pb_post_settings_title'               => $post ? $post->post_title : '',
+			'et_pb_post_settings_excerpt'             => $post ? $post->post_excerpt : '',
+			'et_pb_post_settings_image'               => get_post_thumbnail_id( $post_id ),
+			'et_pb_post_settings_categories'          => self::_get_object_terms( $post_id, 'category' ),
+			'et_pb_post_settings_tags'                => self::_get_object_terms( $post_id, 'post_tag' ),
+			'et_pb_post_settings_project_categories'  => self::_get_object_terms( $post_id, 'project_category' ),
+			'et_pb_post_settings_project_tags'        => self::_get_object_terms( $post_id, 'project_tag' ),
 			et_pb_overflow()->get_field_x( 'et_pb_' ) => $overflow_x,
 			et_pb_overflow()->get_field_y( 'et_pb_' ) => $overflow_y,
+			'et_pb_page_z_index'                      => get_post_meta( $post_id, '_et_pb_page_z_index', true ),
 		);
 		/**
 		 * Filters Divi Builder page settings values.
@@ -668,7 +710,7 @@ class ET_Builder_Settings {
 	}
 
 	protected static function _get_post_type_options_defaults() {
-		$post_types = et_builder_get_enabled_builder_post_types();
+		$post_types        = et_builder_get_enabled_builder_post_types();
 		$post_type_options = array();
 
 		foreach ( $post_types as $post_type ) {
@@ -681,7 +723,7 @@ class ET_Builder_Settings {
 	/**
 	 * Returns all taxonomy terms for a given post.
 	 *
-	 * @param int $post_id Post ID.
+	 * @param int    $post_id Post ID.
 	 * @param string $taxonomy Taxonomy name.
 	 *
 	 * @return string
@@ -698,9 +740,13 @@ class ET_Builder_Settings {
 	public static function sort_post_types( $a, $b ) {
 		// ASCII has a total of 127 characters, so 500 as the interval
 		// should be a sufficiently high number.
-		$rank_priority = array( 'page' => 1500, 'post' => 1000, 'project' => 500 );
-		$a_rank = isset( $rank_priority[ $a->name ] ) ? $rank_priority[ $a->name ] : 0;
-		$b_rank = isset( $rank_priority[ $b->name ] ) ? $rank_priority[ $b->name ] : 0;
+		$rank_priority = array(
+			'page'    => 1500,
+			'post'    => 1000,
+			'project' => 500,
+		);
+		$a_rank        = isset( $rank_priority[ $a->name ] ) ? $rank_priority[ $a->name ] : 0;
+		$b_rank        = isset( $rank_priority[ $b->name ] ) ? $rank_priority[ $b->name ] : 0;
 
 		return strcasecmp( $a->label, $b->label ) - $a_rank + $b_rank;
 	}
@@ -727,12 +773,22 @@ class ET_Builder_Settings {
 		 */
 		self::$_BUILDER_SETTINGS_VALUES = apply_filters( 'et_builder_settings_values', self::_get_builder_settings_values() );
 
+		if ( function_exists( 'is_product' ) && is_product() ) {
+			self::$_PAGE_SETTINGS_FIELDS = self::_get_page_settings_fields( 'product' );
+		} else {
+			self::$_PAGE_SETTINGS_FIELDS = self::_get_page_settings_fields();
+		}
+
 		/**
 		 * Filters Divi Builder page settings field definitions.
 		 *
+		 * @since 3.29     Customize Page Settings Fields for Product CPT.
 		 * @since 3.0.45
 		 */
-		self::$_PAGE_SETTINGS_FIELDS = apply_filters( 'et_builder_page_settings_definitions', self::_get_page_settings_fields() );
+		self::$_PAGE_SETTINGS_FIELDS = apply_filters(
+			'et_builder_page_settings_definitions',
+			self::$_PAGE_SETTINGS_FIELDS
+		);
 
 		/**
 		 * Filters Divi Builder page settings field definitions.
@@ -764,7 +820,7 @@ class ET_Builder_Settings {
 			return;
 		}
 
-		add_action( 'et_builder_settings_update_option', array( $class, 'update_option_cb'), 10, 3 );
+		add_action( 'et_builder_settings_update_option', array( $class, 'update_option_cb' ), 10, 3 );
 
 		// setup plugin style options, rather than epanel
 		if ( et_is_builder_plugin_active() ) {
@@ -812,13 +868,16 @@ class ET_Builder_Settings {
 		$toggles = self::get_toggles();
 
 		foreach ( $tabs as $tab_slug => $tab_name ) {
-			$section                    = $tab_slug . '_main_options';
+			$section = $tab_slug . '_main_options';
 
 			if ( ! isset( $dashboard_data[ $section ] ) ) {
 				$dashboard_data[ $section ] = array();
 			}
 
-			$dashboard_data[ $section ][] = array( 'type' => 'main_title', 'title' => '' );
+			$dashboard_data[ $section ][] = array(
+				'type'  => 'main_title',
+				'title' => '',
+			);
 
 			foreach ( $toggles as $toggle_slug => $toggle ) {
 				$section_started = false;
@@ -833,7 +892,10 @@ class ET_Builder_Settings {
 					}
 
 					if ( ! $section_started ) {
-						$dashboard_data[ $section ][] = array( 'type'  => 'section_start', 'title' => $toggles[ $toggle_slug ] );
+						$dashboard_data[ $section ][] = array(
+							'type'  => 'section_start',
+							'title' => $toggles[ $toggle_slug ],
+						);
 						$section_started              = true;
 					}
 
@@ -909,6 +971,10 @@ class ET_Builder_Settings {
 	}
 
 	public static function update_option_cb( $setting, $setting_value, $post_id = 'global' ) {
+		if ( did_action( 'wp_ajax_et_fb_ajax_save' ) ) {
+			return;
+		}
+
 		self::_maybe_clear_cached_static_css_files( $setting, $setting_value );
 	}
 
@@ -924,7 +990,7 @@ class ET_Builder_Settings {
 
 		if ( 'builder' === $scope ) {
 			$fields = self::$_BUILDER_SETTINGS_FIELDS;
-		} else if ( 'page' === $scope ) {
+		} elseif ( 'page' === $scope ) {
 			$fields = self::$_PAGE_SETTINGS_FIELDS;
 		}
 
@@ -950,13 +1016,13 @@ class ET_Builder_Settings {
 	 * @return string[] {
 	 *     Localized Tab Names.
 	 *
-	 *     @type string $tab_slug Tab name
+	 * @type string $tab_slug Tab name
 	 *     ...
 	 * }
 	 */
 	public static function get_tabs( $scope = 'page' ) {
-		$result   = array();
-		$advanced = esc_html_x( 'Advanced', 'Design Settings', 'et_builder' );
+		$result                = array();
+		$advanced              = esc_html_x( 'Advanced', 'Design Settings', 'et_builder' );
 		$post_type_integration = esc_html_x( 'Post Type Integration', 'Builder Settings', 'et_builder' );
 
 		if ( 'page' === $scope ) {
@@ -965,10 +1031,10 @@ class ET_Builder_Settings {
 				'design'   => esc_html_x( 'Design', 'Design Settings', 'et_builder' ),
 				'advanced' => $advanced,
 			);
-		} else if ( 'builder' === $scope ) {
+		} elseif ( 'builder' === $scope ) {
 			$result = array(
 				'post_type_integration' => $post_type_integration,
-				'advanced' => $advanced,
+				'advanced'              => $advanced,
 			);
 		}
 
@@ -980,10 +1046,11 @@ class ET_Builder_Settings {
 		 * @param string[] $tabs {
 		 *     Localized Tab Names.
 		 *
-		 *     @type string $tab_slug Tab name
+		 * @type string $tab_slug Tab name
 		 *     ...
 		 * }
-		 * @param string   $scope Accepts 'page', 'builder'.
+		 *
+		 * @param string $scope Accepts 'page', 'builder'.
 		 */
 		return apply_filters( 'et_builder_settings_tabs', $result, $scope );
 	}
@@ -1029,17 +1096,18 @@ class ET_Builder_Settings {
 
 		$toggles = array(
 			'main_content'          => ! empty( $post_type_obj ) ? $post_type_obj->labels->singular_name : '',
-			'background'            => esc_html__( 'Background', 'et_builder' ),
+			'background'            => et_builder_i18n( 'Background' ),
 			'color_palette'         => esc_html__( 'Color Palette', 'et_builder' ),
-			'custom_css'            => esc_html__( 'Custom CSS', 'et_builder' ),
+			'custom_css'            => et_builder_i18n( 'Custom CSS' ),
 			'enable_bfb'            => esc_html__( 'Enable The Latest Divi Builder Experience', 'et_builder' ),
 			'enable_classic_editor' => esc_html__( 'Enable Classic Editor', 'et_builder' ),
 			'performance'           => esc_html__( 'Performance', 'et_builder' ),
 			'product_tour'          => esc_html__( 'Product Tour', 'et_builder' ),
 			'spacing'               => esc_html__( 'Spacing', 'et_builder' ),
 			'ab_testing'            => esc_html__( 'Split Testing', 'et_builder' ),
-			'text'                  => esc_html__( 'Text', 'et_builder' ),
-			'visibility'            => esc_html__( 'Visibility', 'et_builder' ),
+			'text'                  => et_builder_i18n( 'Text' ),
+			'visibility'            => et_builder_i18n( 'Visibility' ),
+			'position'              => et_builder_i18n( 'Position' ),
 		);
 
 		/**
@@ -1071,14 +1139,15 @@ class ET_Builder_Settings {
 	 * }
 	 */
 	public static function get_values( $scope = 'page', $post_id = null, $exclude_defaults = false ) {
-		$result = array();
+		$post_id = $post_id ? $post_id : get_the_ID();
+		$result  = array();
 
 		if ( 'builder' === $scope ) {
 			$result = self::$_BUILDER_SETTINGS_VALUES;
-		} else if ( 'page' === $scope ) {
+		} elseif ( 'page' === $scope ) {
 			$result = self::_get_page_settings_values( $post_id );
-		} else if ( 'all' === $scope ) {
-			$result = array (
+		} elseif ( 'all' === $scope ) {
+			$result = array(
 				'page'    => self::_get_page_settings_values( $post_id ),
 				'builder' => self::$_BUILDER_SETTINGS_VALUES,
 			);
@@ -1088,7 +1157,7 @@ class ET_Builder_Settings {
 			'all' === $scope || $result = array( $result );
 
 			foreach ( $result as $key => $settings ) {
-				$result[ $key ] = array_diff_key( $result[ $key ], array_flip( self::$_PAGE_SETTINGS_IS_DEFAULT ) );
+				$result[ $key ] = array_diff_key( $result[ $key ], array_flip( self::$_PAGE_SETTINGS_IS_DEFAULT[ $post_id ] ) );
 			}
 
 			'all' === $scope || $result = $result[0];
@@ -1167,7 +1236,7 @@ class ET_Builder_Settings {
 		// Value retrieval should only be done once
 		if ( is_null( $preview_post_metadata ) ) {
 			// Get autosave data of current post of current user
-			$current_user_id    = get_current_user_id();
+			$current_user_id       = get_current_user_id();
 			$preview_post_metadata = get_post_meta(
 				get_the_ID(),
 				"_et_builder_settings_autosave_{$current_user_id}",
@@ -1224,106 +1293,106 @@ class ET_Builder_Settings {
 }
 
 
-if ( ! function_exists( 'et_builder_settings_init' ) ):
-/**
- * Initializes the builder settings class if needed.
- * {@see 'current_screen'}
- *
- * @param WP_Screen $screen Optional. Default `null`.
- */
-function et_builder_settings_init( $screen = null ) {
-	$init_settings = et_builder_should_load_framework() || wp_doing_ajax();
+if ( ! function_exists( 'et_builder_settings_init' ) ) :
+	/**
+	 * Initializes the builder settings class if needed.
+	 * {@see 'current_screen'}
+	 *
+	 * @param WP_Screen $screen Optional. Default `null`.
+	 */
+	function et_builder_settings_init( $screen = null ) {
+		$init_settings = et_builder_should_load_framework() || wp_doing_ajax();
 
-	if ( ! $init_settings && is_a( $screen, 'WP_Screen' ) ) {
-		$init_settings = 1 === preg_match( '/et_\w+_options/', $screen->base );
-	}
+		if ( ! $init_settings && is_a( $screen, 'WP_Screen' ) ) {
+			$init_settings = 1 === preg_match( '/et_\w+_options/', $screen->base );
+		}
 
-	if ( $init_settings ) {
-		ET_Builder_Settings::get_instance();
+		if ( $init_settings ) {
+			ET_Builder_Settings::get_instance();
+		}
 	}
-}
-add_action( 'current_screen', 'et_builder_settings_init' );
+	add_action( 'current_screen', 'et_builder_settings_init' );
 endif;
 
 
-if ( ! function_exists( 'et_builder_settings_get' ) ):
-/**
- * Get a builder setting value. Default and global setting values are considered when applicable.
- *
- * @param string     $setting Page setting name.
- * @param string|int $post_id Optional. The post id.
- *
- * @return mixed
- */
-function et_builder_settings_get( $setting, $post_id = '' ) {
-	$builder_fields = ET_Builder_Settings::get_fields( 'builder' );
-	$builder_values = ET_Builder_Settings::get_values( 'builder' );
+if ( ! function_exists( 'et_builder_settings_get' ) ) :
+	/**
+	 * Get a builder setting value. Default and global setting values are considered when applicable.
+	 *
+	 * @param string     $setting Page setting name.
+	 * @param string|int $post_id Optional. The post id.
+	 *
+	 * @return mixed
+	 */
+	function et_builder_settings_get( $setting, $post_id = '' ) {
+		$builder_fields = ET_Builder_Settings::get_fields( 'builder' );
+		$builder_values = ET_Builder_Settings::get_values( 'builder' );
 
-	$page_fields = ET_Builder_Settings::get_fields();
-	$page_values = ET_Builder_Settings::get_values( 'page', $post_id );
+		$page_fields = ET_Builder_Settings::get_fields();
+		$page_values = ET_Builder_Settings::get_values( 'page', $post_id );
 
-	$has_page   = isset( $page_fields[ $setting ] );
-	$has_global = isset( $builder_fields[ $setting ] );
+		$has_page   = isset( $page_fields[ $setting ] );
+		$has_global = isset( $builder_fields[ $setting ] );
 
-	$value = $global_value = '';
-	$global_is_default = false;
+		$value             = $global_value = '';
+		$global_is_default = false;
 
-	if ( ! $has_page && ! $has_global ) {
+		if ( ! $has_page && ! $has_global ) {
+			return $value;
+		}
+
+		if ( $has_global ) {
+			$global_value       = $builder_values[ $setting ];
+			$global_has_default = isset( $builder_fields[ $setting ]['default'] );
+			$global_is_default  = $global_has_default && $global_value === $builder_fields[ $setting ]['default'];
+			$value              = $global_value;
+		}
+
+		if ( $has_page ) {
+			$page_value       = $page_values[ $setting ];
+			$page_has_default = isset( $page_fields[ $setting ]['default'] );
+			$page_is_default  = $page_has_default && $page_value === $page_fields[ $setting ]['default'];
+			$value            = $page_value;
+		}
+
+		if ( ! $has_page || ( $page_is_default && ! $global_is_default ) ) {
+			$value = $global_value;
+		} elseif ( ! $has_global || ! $page_is_default ) {
+			$value = $page_value;
+		}
+
 		return $value;
 	}
-
-	if ( $has_global ) {
-		$global_value       = $builder_values[ $setting ];
-		$global_has_default = isset( $builder_fields[ $setting ]['default'] );
-		$global_is_default  = $global_has_default && $global_value === $builder_fields[ $setting ]['default'];
-		$value              = $global_value;
-	}
-
-	if ( $has_page ) {
-		$page_value       = $page_values[ $setting ];
-		$page_has_default = isset( $page_fields[ $setting ]['default'] );
-		$page_is_default  = $page_has_default && $page_value === $page_fields[ $setting ]['default'];
-		$value            = $page_value;
-	}
-
-	if ( ! $has_page || ( $page_is_default && ! $global_is_default ) ) {
-		$value = $global_value;
-	} else if ( ! $has_global || ! $page_is_default ) {
-		$value = $page_value;
-	}
-
-	return $value;
-}
 endif;
 
 
-if ( ! function_exists( 'et_builder_setting_is_off' ) ):
-/**
- * Whether or not a builder setting is off. Default and global setting values are
- * considered when applicable.
- *
- * @param string     $setting Page setting name.
- * @param string|int $post_id Optional. The post id.
- *
- * @return bool
- */
-function et_builder_setting_is_off( $setting, $post_id = '' ) {
-	return 'off' === et_builder_settings_get( $setting, $post_id );
-}
+if ( ! function_exists( 'et_builder_setting_is_off' ) ) :
+	/**
+	 * Whether or not a builder setting is off. Default and global setting values are
+	 * considered when applicable.
+	 *
+	 * @param string     $setting Page setting name.
+	 * @param string|int $post_id Optional. The post id.
+	 *
+	 * @return bool
+	 */
+	function et_builder_setting_is_off( $setting, $post_id = '' ) {
+		return 'off' === et_builder_settings_get( $setting, $post_id );
+	}
 endif;
 
 
-if ( ! function_exists( 'et_builder_setting_is_on' ) ):
-/**
- * Whether or not a builder setting is on. Default and global setting values are
- * considered when applicable.
- *
- * @param string     $setting Page setting name.
- * @param string|int $post_id Optional. The post id.
- *
- * @return bool
- */
-function et_builder_setting_is_on( $setting, $post_id = '' ) {
-	return 'on' === et_builder_settings_get( $setting, $post_id );
-}
+if ( ! function_exists( 'et_builder_setting_is_on' ) ) :
+	/**
+	 * Whether or not a builder setting is on. Default and global setting values are
+	 * considered when applicable.
+	 *
+	 * @param string     $setting Page setting name.
+	 * @param string|int $post_id Optional. The post id.
+	 *
+	 * @return bool
+	 */
+	function et_builder_setting_is_on( $setting, $post_id = '' ) {
+		return 'on' === et_builder_settings_get( $setting, $post_id );
+	}
 endif;

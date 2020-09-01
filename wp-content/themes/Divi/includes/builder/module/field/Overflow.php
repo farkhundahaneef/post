@@ -8,10 +8,8 @@ class ET_Builder_Module_Field_Overflow extends ET_Builder_Module_Field_Base {
 			'tab_slug'       => 'custom_css',
 			'toggle_slug'    => 'visibility',
 			'hover'          => 'tabs',
-			'mobile_options' => false,
+			'mobile_options' => true,
 			'default'        => ET_Builder_Module_Helper_Overflow::OVERFLOW_DEFAULT,
-			'default_tablet' => ET_Builder_Module_Helper_Overflow::OVERFLOW_DEFAULT,
-			'default_phone'  => ET_Builder_Module_Helper_Overflow::OVERFLOW_DEFAULT,
 		);
 	}
 
@@ -25,6 +23,30 @@ class ET_Builder_Module_Field_Overflow extends ET_Builder_Module_Field_Base {
 	}
 
 	protected function get_field( $axis, $args ) {
+		static $cache;
+
+		if ( $cache ) {
+			$i18n = $cache;
+		} else {
+			// phpcs:disable WordPress.WP.I18n.MissingTranslatorsComment
+			$i18n = array(
+				'default'     => __( 'Default', 'et_builder' ),
+				'visible'     => __( 'Visible', 'et_builder' ),
+				'scroll'      => __( 'Scroll', 'et_builder' ),
+				'hidden'      => __( 'Hidden', 'et_builder' ),
+				'auto'        => __( 'Auto', 'et_builder' ),
+				'description' => __( 'Here you can control element overflow on the %s axis. If set to scroll, content that overflows static widths or heights will trigger a browser scrollbar. If set to hidden, content overflow will be clipped.', 'et_builder' ),
+				'horizontal'  => __( 'Horizontal Overflow', 'et_builder' ),
+				'vertical'    => __( 'Vertical Overflow', 'et_builder' ),
+			);
+			// phpcs:enable
+
+			// Don't cache translations too early or else we'd be unable to replace them in definitions.
+			if ( did_action( 'et_builder_structure_elements_load' ) ) {
+				$cache = $i18n;
+			}
+		}
+
 		$overflow         = et_pb_overflow();
 		$OVERFLOW_DEFAULT = ET_Builder_Module_Helper_Overflow::OVERFLOW_DEFAULT;
 		$OVERFLOW_VISIBLE = ET_Builder_Module_Helper_Overflow::OVERFLOW_VISIBLE;
@@ -33,60 +55,35 @@ class ET_Builder_Module_Field_Overflow extends ET_Builder_Module_Field_Base {
 		$OVERFLOW_AUTO    = ET_Builder_Module_Helper_Overflow::OVERFLOW_AUTO;
 
 		switch ( $axis ) {
-			case 'x' :
+			case 'x':
 				$field = $overflow->get_field_x( $args['prefix'] );
-				$label = __( 'Horizontal Overflow', 'et_builder' );
+				$label = $i18n['horizontal'];
 				break;
-			default :
+			default:
 				$field = $overflow->get_field_y( $args['prefix'] );
-				$label = __( 'Vertical Overflow', 'et_builder' );
+				$label = $i18n['vertical'];
 				break;
 		}
 
 		$settings = array(
 			'label'          => $label,
 			'type'           => 'select',
-			'id'             => $field,
 			'hover'          => $args['hover'],
-			// Disabled temporary responsive support, as select control doesn't support responsive tabs
-			//'mobile_options' => $args['mobile_options'],
+			'mobile_options' => $args['mobile_options'],
 			'default'        => $args['default'],
-			'default_tablet' => $args['default_tablet'],
-			'default_phone'  => $args['default_phone'],
 			'tab_slug'       => $args['tab_slug'],
 			'toggle_slug'    => $args['toggle_slug'],
 			'options'        => array(
-				$OVERFLOW_DEFAULT => __( 'Default', 'et_builder' ),
-				$OVERFLOW_VISIBLE => __( 'Visible', 'et_builder' ),
-				$OVERFLOW_SCROLL  => __( 'Scroll', 'et_builder' ),
-				$OVERFLOW_HIDDEN  => __( 'Hidden', 'et_builder' ),
-				$OVERFLOW_AUTO    => __( 'Auto', 'et_builder' ),
+				$OVERFLOW_DEFAULT => $i18n['default'],
+				$OVERFLOW_VISIBLE => $i18n['visible'],
+				$OVERFLOW_SCROLL  => $i18n['scroll'],
+				$OVERFLOW_HIDDEN  => $i18n['hidden'],
+				$OVERFLOW_AUTO    => $i18n['auto'],
 			),
-			'description'    => sprintf(
-				__( 'Here you can control element overflow on the %s axis. If set to scroll, content that overflows static widths or heights will trigger a browser scrollbar. If set to hidden, content overflow will be clipped.', 'et_builder' ),
-				strtoupper( $axis )
-			),
+			'description'    => sprintf( $i18n['description'], strtoupper( $axis ) ),
 		);
 
 		$options = array( $field => $settings );
-
-		if ( $args['mobile_options'] ) {
-			$options["{$field}_tablet"]      = array(
-				'type'        => 'skip',
-				'tab_slug'    => $settings['tab_slug'],
-				'toggle_slug' => $settings['toggle_slug'],
-			);
-			$options["{$field}_phone"]       = array(
-				'type'        => 'skip',
-				'tab_slug'    => $settings['tab_slug'],
-				'toggle_slug' => $settings['toggle_slug'],
-			);
-			$options["{$field}_last_edited"] = array(
-				'type'        => 'skip',
-				'tab_slug'    => $settings['tab_slug'],
-				'toggle_slug' => $settings['toggle_slug'],
-			);
-		}
 
 		return $options;
 	}

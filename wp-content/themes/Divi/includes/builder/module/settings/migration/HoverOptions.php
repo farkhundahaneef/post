@@ -23,11 +23,11 @@ class ET_Builder_Module_Settings_Migration_HoverOptions extends ET_Builder_Modul
 
 		$buttons = array( 'et_pb_fullwidth_header' );
 		switch ( $group ) {
-			case 'button' :
+			case 'button':
 				return $button;
-			case $buttons :
+			case $buttons:
 				return $buttons;
-			default :
+			default:
 				return array_merge( $buttons, $button );
 		}
 	}
@@ -45,35 +45,35 @@ class ET_Builder_Module_Settings_Migration_HoverOptions extends ET_Builder_Modul
 		);
 
 		$return = array();
-		$hover = et_pb_hover_options();
+		$hover  = et_pb_hover_options();
 
 		foreach ( $fields as $field ) {
-			$return[$hover->get_hover_enabled_field("button_{$field}")] = array(
+			$return[ $hover->get_hover_enabled_field( "button_{$field}" ) ]     = array(
 				'affected_fields' => array(
 					"button_{$field}_hover" => $this->get_modules( 'button' ),
 				),
 			);
-			$return[$hover->get_hover_field("button_{$field}")] = array(
+			$return[ $hover->get_hover_field( "button_{$field}" ) ]             = array(
 				'affected_fields' => array(
 					"button_{$field}_hover" => $this->get_modules( 'button' ),
 				),
 			);
-			$return[$hover->get_hover_enabled_field("button_one_{$field}")] = array(
+			$return[ $hover->get_hover_enabled_field( "button_one_{$field}" ) ] = array(
 				'affected_fields' => array(
 					"button_one_{$field}_hover" => $this->get_modules( 'buttons' ),
 				),
 			);
-			$return[$hover->get_hover_field("button_one_{$field}")] = array(
+			$return[ $hover->get_hover_field( "button_one_{$field}" ) ]         = array(
 				'affected_fields' => array(
 					"button_one_{$field}_hover" => $this->get_modules( 'buttons' ),
 				),
 			);
-			$return[$hover->get_hover_enabled_field("button_two_{$field}")] = array(
+			$return[ $hover->get_hover_enabled_field( "button_two_{$field}" ) ] = array(
 				'affected_fields' => array(
 					"button_two_{$field}_hover" => $this->get_modules( 'buttons' ),
 				),
 			);
-			$return[$hover->get_hover_field("button_two_{$field}")] = array(
+			$return[ $hover->get_hover_field( "button_two_{$field}" ) ]         = array(
 				'affected_fields' => array(
 					"button_two_{$field}_hover" => $this->get_modules( 'buttons' ),
 				),
@@ -83,7 +83,7 @@ class ET_Builder_Module_Settings_Migration_HoverOptions extends ET_Builder_Modul
 		return $return;
 	}
 
-	public function migrate( $field_name, $current_value, $module_slug, $saved_value, $saved_field_name, $attrs, $content ) {
+	public function migrate( $field_name, $current_value, $module_slug, $saved_value, $saved_field_name, $attrs, $content, $module_address ) {
 		if ( $field_name == et_pb_hover_options()->get_hover_field( $field_name ) ) {
 			return strlen( $current_value ) ? $current_value : null;
 		}

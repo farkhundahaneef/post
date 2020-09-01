@@ -41,6 +41,12 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 			10,
 			5
 		);
+		// Override the language code used in the AJAX request that checks if
+		// cached definitions/helpers needs to be updated.
+		add_filter( 'et_fb_current_page_params', array( $this, 'override_current_page_params' ) );
+
+		// Override suppress_filters argument when accessing library layouts,
+		add_filter( 'et_pb_show_all_layouts_suppress_filters', '__return_true' );
 	}
 
 	/**
@@ -55,13 +61,13 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 			$missing_fields = array(
 				array(
 					'value' => '_et_pb_built_for_post_type',
-					'attr' => array(
+					'attr'  => array(
 						'action' => 'copy',
 					),
 				),
 			);
 
-			$seen = array();
+			$seen   = array();
 			$fields = $config['wpml-config']['custom-fields']['custom-field'];
 
 			foreach ( $fields as $field ) {
@@ -82,13 +88,13 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 		if ( ! empty( $config['wpml-config']['taxonomies']['taxonomy'] ) ) {
 
 			$taxonomy_replacements = array(
-				'scope' => array(
+				'scope'           => array(
 					'translate' => 0,
 				),
-				'layout_type' => array(
+				'layout_type'     => array(
 					'translate' => 0,
 				),
-				'module_width' => array(
+				'module_width'    => array(
 					'translate' => 0,
 				),
 				'layout_category' => array(
@@ -97,7 +103,7 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 			);
 
 			$fixed_taxonomies = array();
-			$taxonomies = $config['wpml-config']['taxonomies']['taxonomy'];
+			$taxonomies       = $config['wpml-config']['taxonomies']['taxonomy'];
 
 			foreach ( $taxonomies as $taxonomy ) {
 				if ( ! empty( $taxonomy_replacements[ $taxonomy['value'] ] ) ) {
@@ -119,8 +125,8 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 	 *
 	 * @internal
 	 *
-	 * @param array $shortcode_atts
-	 * @param array $atts
+	 * @param array  $shortcode_atts
+	 * @param array  $atts
 	 * @param string $slug
 	 * @param string $address
 	 *
@@ -147,6 +153,24 @@ class ET_Builder_Plugin_Compat_WPML_Multilingual_CMS extends ET_Builder_Plugin_C
 		}
 
 		return $shortcode_atts;
+	}
+
+	/**
+	 * Override the language code used in the AJAX request that checks if
+	 * cached definitions/helpers needs to be updated.
+	 *
+	 * @param array $params
+	 *
+	 * @return array
+	 */
+	public function override_current_page_params( $params ) {
+		$langCode = apply_filters( 'wpml_current_language', false );
+
+		if ( $langCode ) {
+			$params['langCode'] = $langCode;
+		}
+
+		return $params;
 	}
 }
 

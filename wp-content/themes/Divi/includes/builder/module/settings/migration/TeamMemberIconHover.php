@@ -27,16 +27,16 @@ class ET_Builder_Module_Settings_Migration_TeamMemberIconHover extends ET_Builde
 		return $modules;
 	}
 
-	public function migrate( $field_name, $current_value, $module_slug, $saved_value, $saved_field_name, $attrs, $content ) {
+	public function migrate( $field_name, $current_value, $module_slug, $saved_value, $saved_field_name, $attrs, $content, $module_address ) {
 
 		if ( empty( $current_value ) ) {
 			return $saved_value;
 		}
 
 		switch ( $field_name ) {
-			case et_pb_hover_options()->get_hover_field( 'icon_color' ) :
+			case et_pb_hover_options()->get_hover_field( 'icon_color' ):
 				return $current_value;
-			case et_pb_hover_options()->get_hover_enabled_field( 'icon_color' ) :
+			case et_pb_hover_options()->get_hover_enabled_field( 'icon_color' ):
 				return 'on';
 		}
 

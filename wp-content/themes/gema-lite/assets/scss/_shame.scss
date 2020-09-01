@@ -1,0 +1,96 @@
+/* Text meant only for screen readers. */
+.screen-reader-text {
+	border: 0;
+	clip: rect(1px, 1px, 1px, 1px);
+	clip-path: inset(50%);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute !important;
+	width: 1px;
+	word-wrap: normal !important; /* Many screen reader and browser combinations announce broken words as they would appear visually. */
+
+	&:focus {
+		background-color: $color-light;
+		border-radius: 3px;
+		box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.6);
+		clip: auto !important;
+		clip-path: none;
+		color: $color-dark;
+		display: block;
+		font-weight: bold;
+		height: auto;
+		left: 5px;
+		line-height: normal;
+		padding: 15px 23px 14px;
+		text-decoration: none;
+		top: 5px;
+		width: auto;
+		z-index: 100000; /* Above WP toolbar. */
+	}
+}
+
+
+.edit-link {
+	@extend %small-link;
+}
+
+.content-area {
+	margin: auto;
+	position: relative;
+}
+
+.tiled-gallery.tiled-gallery {
+	clear: none;
+}
+
+.sticky {
+	background-color: white;
+}
+
+// Used for page transition (?)
+body {
+	opacity: 0;
+	transition: opacity $transitionDuration $easeInOutQuad;
+}
+
+// Fix Jetpack Recipe shortcode printing 
+@media print {
+	body {
+		opacity: 1;
+	}
+}
+
+#main > .grid__item {
+	display: none;
+}
+
+#wpstats {
+	display: none;
+}
+
+// Pool Daddy container
+.PDS_Poll {
+	margin-bottom: $default-spacing-unit;
+}
+
+// Hide an element in the customizer
+// that is creating space below footer
+#webkit-iframe-shim {
+	position: fixed;
+	bottom: -9999px;
+	left: -9999px;
+}
+
+// Fixes a bug found in Windows 7 running IE11
+// which prevents fonts from displaying
+.is--ie * {
+	font-feature-settings: normal;
+}
+
+@include query-below($desk-big) {
+	.tiled-gallery .gallery-row {
+		width: auto !important;
+	}
+}

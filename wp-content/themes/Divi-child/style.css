@@ -1,0 +1,57 @@
+/*
+Theme Name: Divi Child
+Text Domain:Divi-child
+Template:Divi
+*/
+.et_pb_button_module_wrapper.et_pb_button_0_wrapper.et_pb_button_alignment_center.et_pb_module {
+    margin-top: -51px;
+    margin-left: -29px;
+}
+a{
+    color:#2222 !important;
+}
+
+.et_header_style_left #et-top-navigation nav>ul>li>a {
+    padding-bottom: 33px;
+    color: #222222 !important;
+    font-size: 18px;
+}
+.et-cart-info span:before{
+    margin-left: 54px;
+    padding-left: 39px;
+}
+#et-info-email, #et-info-phone, .et-cart-info span {
+    color: #222222;
+    font-size: 18px;
+}
+#et_search_icon:before{
+    color: #222222;
+    font-size: 18px;
+}
+#logo{
+    margin-left: -66px !important;
+    margin-top: 5px;
+}
+span.onsale {
+    display: none;
+}
+.woocommerce ul.products li.product .woocommerce-loop-category__title, .woocommerce ul.products li.product .woocommerce-loop-product__title, .woocommerce ul.products li.product h3 {
+    font-size: 16px;
+    text-align: center;
+    color: #222222;
+    font-weight: 400;
+
+}
+.woocommerce ul.products li.product .price, .woocommerce ul.products li.product .price del, .woocommerce-page ul.products li.product .price, .woocommerce-page ul.products li.product .price del {
+    color: #222222!important;
+    text-align: center;
+    font-size: 24px !important;
+    font-weight: 700;
+}
+del{
+    display: none !important;
+}
+a {
+    color: black !important;
+    display: block;
+}
